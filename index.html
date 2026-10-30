@@ -1,1 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>College Student Portal</title>
 
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background: #eef2ff;
+}
+
+.container {
+  max-width: 600px;
+  margin: 30px auto;
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px #0002;
+}
+
+h1, h2 {
+  text-align: center;
+  color: #263b80;
+}
+
+input {
+  width: 100%;
+  padding: 13px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+button {
+  width: 100%;
+  padding: 13px;
+  background: #304fc4;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+button:hover {
+  background: #203a9b;
+}
+
+.stats {
+  background: #e5eaff;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 20px 0;
+}
+
+.student {
+  background: #f3f5ff;
+  padding: 12px;
+  border-radius: 8px;
+  margin: 10px 0;
+  overflow-wrap: anywhere;
+}
+
+.delete {
+  background: #dc3545;
+}
+
+#adminPanel {
+  display: none;
+}
+
+.small {
+  font-size: 13px;
+  color: #666;
+  text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>College Student Portal</h1>
+
+<h2>Student Entry</h2>
+
+<form id="studentForm">
+
+<input
+  type="text"
+  id="studentId"
+  placeholder="Enter Student ID"
+  required
+>
+
+<input
+  type="text"
+  id="studentName"
+  placeholder="Enter Student Name"
+  required
+>
+
+<button type="submit">Submit</button>
+
+</form>
+
+<p class="small" id="message"></p>
+
+<hr>
+
+<h2>Admin Monitoring</h2>
+
+<button onclick="adminLogin()">
+  Admin Login
+</button>
+
+<div id="adminPanel">
+
+<div class="stats">
+  <h3>Total Submitted Students</h3>
+  <h1 id="total">0</h1>
+</div>
+
+<input
+  type="text"
+  id="search"
+  placeholder="Search ID or Name"
+  oninput="showStudents()"
+>
+
+<div id="studentList"></div>
+
+</div>
+
+</div>
+
+<script>
+
+// Browser storage
+function getStudents() {
+  return JSON.parse(
+    localStorage.getItem("students") || "[]"
+  );
+}
+
+// Student submission
+document.getElementById("studentForm")
+.addEventListener("submit", function(e) {
+
+  e.preventDefault();
+
+  let id = document.getElementById("studentId")
+  .value.trim();
+
+  let name = document.getElementById("studentName")
+  .value.trim();
+
+  let students = getStudents();
+
+  let exists = students.some(
+    student => student.id.toLowerCase() === id.toLowerCase()
+  );
+
+  if (exists) {
+    document.getElementById("message").innerText =
+      "This Student ID is already submitted!";
+    return;
+  }
+
+  students.push({
+    id: id,
+    name: name,
+    date: new Date().toLocaleString()
+  });
+
+  localStorage.setItem(
+    "students",
+    JSON.stringify(students)
+  );
+
+  document.getElementById("message").innerText =
+    "Successfully Submitted!";
+
+  document.getElementById("studentForm").reset();
+
+});
+
+// Admin login
+function adminLogin() {
+
+  let password = prompt("Enter Admin Password:");
+
+  if (password === "admin123") {
+
+    document.getElementById("adminPanel")
+    .style.display = "block";
+
+    showStudents();
+
+  } else {
+    alert("Incorrect Password!");
+  }
+
+}
+
+// Show submitted students
+function showStudents() {
+
+  let students = getStudents();
+
+  let search = document.getElementById("search")
+  .value.toLowerCase();
+
+  let filtered = students.filter(student =>
+    student.id.toLowerCase().includes(search) ||
+    student.name.toLowerCase().includes(search)
+  );
+
+  document.getElementById("total").innerText =
+    students.length;
+
+  let list = document.getElementById("studentList");
+
+  list.innerHTML = "";
+
+  if (filtered.length === 0) {
+    list.innerHTML = "<p>No students found.</p>";
+  }
+
+  filtered.forEach((student, index) => {
+
+    let div = document.createElement("div");
+    div.className = "student";
+
+    let details = document.createElement("p");
+    details.textContent =
+      "ID: " + student.id +
+      " | Name: " + student.name +
+      " | Submitted: " + student.date;
+
+    let deleteBtn = document.createElement("button");
+    deleteBtn.className = "delete";
+    deleteBtn.textContent = "Delete";
+
+    deleteBtn.onclick = function() {
+      if (!confirm("Delete this submission?")) return;
+
+      let current = getStudents();
+      current = current.filter(s => s.id !== student.id);
+
+      localStorage.setItem(
+        "students",
+        JSON.stringify(current)
+      );
+
+      showStudents();
+    };
+
+    div.appendChild(details);
+    div.appendChild(deleteBtn);
+    list.appendChild(div);
+
+  });
+
+}
+
+</script>
+
+</body>
+</html>
