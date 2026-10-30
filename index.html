@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +32,7 @@ h1, h2 {
   color: #263b80;
 }
 
-input {
+input, select {
   width: 100%;
   padding: 13px;
   margin: 10px 0;
@@ -112,6 +113,24 @@ button:hover {
   required
 >
 
+<!-- Branch Selection -->
+<select id="branch" required>
+  <option value="">Select Branch</option>
+  <option value="CSE">CSE</option>
+  <option value="ECE">ECE</option>
+  <option value="EEE">EEE</option>
+  <option value="Mechanical">Mechanical</option>
+  <option value="Civil">Civil</option>
+  <option value="IT">IT</option>
+</select>
+
+<!-- Year Selection -->
+<select id="year" required>
+  <option value="">Select Year</option>
+  <option value="First Year">First Year</option>
+  <option value="Second Year">Second Year</option>
+</select>
+
 <button type="submit">Submit</button>
 
 </form>
@@ -136,7 +155,7 @@ button:hover {
 <input
   type="text"
   id="search"
-  placeholder="Search ID or Name"
+  placeholder="Search ID, Name, Branch or Year"
   oninput="showStudents()"
 >
 
@@ -167,6 +186,10 @@ document.getElementById("studentForm")
   let name = document.getElementById("studentName")
   .value.trim();
 
+  let branch = document.getElementById("branch").value;
+
+  let year = document.getElementById("year").value;
+
   let students = getStudents();
 
   let exists = students.some(
@@ -182,6 +205,8 @@ document.getElementById("studentForm")
   students.push({
     id: id,
     name: name,
+    branch: branch,
+    year: year,
     date: new Date().toLocaleString()
   });
 
@@ -225,7 +250,9 @@ function showStudents() {
 
   let filtered = students.filter(student =>
     student.id.toLowerCase().includes(search) ||
-    student.name.toLowerCase().includes(search)
+    student.name.toLowerCase().includes(search) ||
+    (student.branch || "").toLowerCase().includes(search) ||
+    (student.year || "").toLowerCase().includes(search)
   );
 
   document.getElementById("total").innerText =
@@ -239,15 +266,18 @@ function showStudents() {
     list.innerHTML = "<p>No students found.</p>";
   }
 
-  filtered.forEach((student, index) => {
+  filtered.forEach((student) => {
 
     let div = document.createElement("div");
     div.className = "student";
 
     let details = document.createElement("p");
+
     details.textContent =
       "ID: " + student.id +
       " | Name: " + student.name +
+      " | Branch: " + (student.branch || "Not specified") +
+      " | Year: " + (student.year || "Not specified") +
       " | Submitted: " + student.date;
 
     let deleteBtn = document.createElement("button");
